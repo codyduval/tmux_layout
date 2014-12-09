@@ -1,5 +1,3 @@
 require "tmux_layout/version"
+require "tmux_layout/base"
 
-module TmuxLayout
-  # Your code goes here...
-end

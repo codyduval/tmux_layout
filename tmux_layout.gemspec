@@ -8,9 +8,10 @@ Gem::Specification.new do |spec|
   spec.version       = TmuxLayout::VERSION
   spec.authors       = ["Cody Duval"]
   spec.email         = ["cody.duval@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{Generates configuration strings for layouts in tmux}
+  spec.description   = %q{Setting up pane splits in tmux is hard.  This makes it
+                          slightly less hard.}
+  spec.homepage      = "http://www.gitub.com/codyduval/tmux_layout"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
@@ -20,4 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rspec", "~> 3.1"
+  spec.add_development_dependency "guard-rspec", "~> 4.3"
+  spec.add_development_dependency "pry", "~> 0.1"
 end
