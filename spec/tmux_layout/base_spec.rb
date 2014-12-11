@@ -91,7 +91,7 @@ module TmuxLayout
       expect(second_second_child.y_offset).to eq(26)
     end
 
-    it "should list all the descendants of a node" do
+    it "should produce a config string when split vertically then horizontally"do
       node = PaneNode.new(178, 51, 0, 0)
       node.split_vertically(0.50)
 
@@ -106,8 +106,25 @@ module TmuxLayout
 
       second_second_second_child = second_second_child.children[1]
 
-      list = node.tree_params
-      binding.pry
+      list = node.tree_as_string
+
+      expect(list).to eq("178x51,0,0[178x25,0,0,zzzz,178x25,0,26{89x25,0,26,zzzz,88x25,90,26,zzzz}]")
+    end
+
+    it "should produce a config string when split vertically two times" do
+      node = PaneNode.new(178, 51, 0, 0)
+      node.split_vertically(0.50)
+
+      children = node.children
+      second_child = children[1]
+
+      second_child.split_vertically(0.50)
+
+      second_second_child = second_child.children[1]
+      second_second_child.split_vertically(0.50)
+
+      list = node.tree_as_string
+      expect(list).to eq("178x51,0,0[178x25,0,0,zzzz,178x12,0,26,zzzz,178x6,0,39,zzzz,178x5,0,46,zzzz]")
     end
   end
 

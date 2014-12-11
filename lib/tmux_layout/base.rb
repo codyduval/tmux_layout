@@ -52,44 +52,66 @@ module TmuxLayout
       list
     end
 
-    def tree_params(list = [], tree_params = [])
+    def tree_as_string(list = [], tree_params = [], brackets = [])
+      # Start string with width x height and offset for root node
+      if tree_params.empty?
+        tree_params << self.params
+      end
       unless children.empty?
         children.each do |child|
           list << child
-          if (child.width == child.parent.width) &&
-             (child.left_or_right == :left)
-            tree_params << "["
-            tree_params << child.params
-          elsif (child.width == child.parent.width) &&
-                (child.left_or_right == :right) &&
-                (child.children.empty?)
-            tree_params << child.params
-            tree_params << "]"
-          elsif (child.height == child.parent.height) &&
-                (child.left_or_right == :left) &&
-            tree_params << "{"
-            tree_params << child.params
-          elsif (child.height == child.parent.height) &&
-                (child.left_or_right == :right) &&
-                (child.children.empty?)
-            tree_params << child.params
-            tree_params << "}"
-          else
+          if tree_params.count != 1 && invisible_pane?
+            tree_params << ","
+          elsif child.left_or_right == :left
+            #if a child and parent have the same width, then it's being
+            #split vertically.  Tmux indicates vertical splits
+            #with square brackets.
+            if (child.width == child.parent.width)
+              tree_params << "["
+              brackets << "]"
+            #otherwise, it's a horizontal split, show that with a curly 
+            #brace
+            else
+              tree_params << "{"
+              brackets << "}"
+            end
+          end
+          #if a pane splits in the same direction as its parent, then
+          #don't print it (just a weird tmux thing).
+          unless child.invisible_pane?
             tree_params << child.params
           end
-          child.tree_params(list, tree_params)
+          #just use 00 for the pane id - tmux throws this away
+          #when using a layout string for building a new layout
+          if child.window_pane?
+            tree_params << ",00"
+          end
+          #If it's a leaf node, then close the brackets
+          if (child.left_or_right == :right) &&
+             (child.children.empty?)
+            tree_params << brackets.pop
+          end
+          #keep recursing through the tree, passing any values
+          #for the three_params or brackets that its collected
+          #along the way
+          child.tree_as_string(list, tree_params, brackets)
         end
+        #Remember to close any remaining brackets or braces.
+        tree_params << brackets.pop
       end
-      tree_params      
+      tree_params.join 
     end
 
     def split_vertically(percentage)
-      first_child_height = (@height - (@height * percentage)).to_i
-      second_child_height = (@height - first_child_height).to_i
+      first_child_height = ((@height - (@height * percentage)).to_i)
+      second_child_height = ((@height - first_child_height).to_i)
       first_child = PaneNode.new(@width, first_child_height, 0, 0, :left)
       second_child = PaneNode.new(@width, second_child_height, 0, 0, :right)
 
       add([first_child, second_child])
+
+      first_child.x_offset = first_child.parent.x_offset 
+      second_child.x_offset = second_child.parent.x_offset 
 
       first_child.y_offset = first_child.parent.y_offset 
       second_child.y_offset = second_child.parent.y_offset + second_child_height 
@@ -105,8 +127,17 @@ module TmuxLayout
 
       first_child.x_offset = first_child.parent.x_offset 
       second_child.x_offset = second_child.parent.x_offset + second_child_width 
+
       first_child.y_offset = first_child.parent.y_offset 
       second_child.y_offset = second_child.parent.y_offset 
+    end
+
+    #Tmux doesn't print panes if they contain other panes AND have the
+    #same split orientation of their parent.
+    def invisible_pane?
+      ((children.any? && parent) && 
+        ((children.first.width == parent.width) ||
+         (children.first.height == parent.height)))
     end
     
     #A window_pane actually shows a terminal
