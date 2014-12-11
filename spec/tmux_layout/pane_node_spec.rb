@@ -1,21 +1,6 @@
 require "spec_helper"
 
 module TmuxLayout
-  describe CheckSum do
-    it "should take and hold a string" do
-      csum = CheckSum.new('HELLO')
-
-      expect(csum.config_string).to eq('HELLO')
-    end
-
-    it "should return a checksum" do
-      checksum = CheckSum.new('159x48,0,0{79x48,0,0,79x48,80,0}')
-      csum_value = checksum.csum
-      
-      expect(csum_value).to eq('bb62')
-    end
-  end
-
   describe PaneNode do
     it "should hold the values for a panes width, height, and offset" do
       node = PaneNode.new(159, 48, 0, 0)
@@ -108,7 +93,7 @@ module TmuxLayout
 
       list = node.tree_as_string
 
-      expect(list).to eq("178x51,0,0[178x25,0,0,zzzz,178x25,0,26{89x25,0,26,zzzz,88x25,90,26,zzzz}]")
+      expect(list).to eq("178x51,0,0[178x25,0,0,00178x26,0,26{89x26,0,26,0089x26,89,26,00}]")
     end
 
     it "should produce a config string when split vertically two times" do
@@ -124,7 +109,7 @@ module TmuxLayout
       second_second_child.split_vertically(0.50)
 
       list = node.tree_as_string
-      expect(list).to eq("178x51,0,0[178x25,0,0,zzzz,178x12,0,26,zzzz,178x6,0,39,zzzz,178x5,0,46,zzzz]")
+      expect(list).to eq("178x51,0,0[178x25,0,0,00,178x13,0,26,00,,178x6,0,39,00,178x7,0,46,00]")
     end
   end
 
